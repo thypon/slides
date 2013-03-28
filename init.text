@@ -1,0 +1,49 @@
+title: Sistemi di Avvio
+author: Andrea Brancaleoni
+
+## Cos'è un Sistema di Avvio
+
+## Linea Evolutiva
+
+- Sistemi di avvio sequenziali: appartengono a questa famiglia tutti i primi sistemi di avvio dove o non si era in possesso di architetture multicore/manycore o, dove c'erano, non era necessario accendere/spegnere la macchina in continuazione ma era più importante l'uptime. (EG. System-V init, BSD-Style init)
+- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi non tra loro indipendenti. (EG: OpenRC, INITNG)
+- Sistemi di avvio Startless/Event Based: spesso forniscono funzionalità simili ai sistemi di avvio gerarchico, tuttavia il loro funzionamento interno è diverso. (EG: LaunchD, Upstart, SystemD)
+
+## System-V init
+
+Init is the parent of all processes. Its primary role is to create processes from a script stored in the file /etc/inittab.
+It also contains well known and used utilities like reboot, shutdown, killall, poweroff, tellinit, sulogin, wall, etc.
+
+## LaunchD
+
+LaunchD è un framework open-source per gestire l'avvio, lo spegimento di altri demoni, applicazioni, processi e script. È stato scritto da Dave Zarzycki alla Apple, dove è stato introdotto, per la prima volta in Mac OS X Tiger, era licenziato sotto Apple Public License ma per facilitarne l'adozione la licenza fu cambiata con la Apache.
+
+## Caratteristiche di LaunchD
+LaunchD è essenzialmente un sostituto per:
+
+- init
+- rc
+- init.d script
+- rc.d script
+- SystemStarter (Mac OS X)
+- inetd / xinetd
+- crond / atd
+- watchdogd
+
+## Upstart
+
+Upstart is an *event-based* replacement for the /sbin/init daemon which handles starting of tasks and services during boot, 
+stopping them during shutdown and supervising them while the system is running.
+
+It was originally developed for the Ubuntu distribution, but is intended to be suitable for deployment in all Linux 
+distributions as a replacement for the venerable System-V init.
+
+
+
+## SystemD
+
+systemd is a system and service manager for Linux, compatible with SysV and LSB init scripts. 
+systemd provides aggressive parallelization capabilities, uses socket and D-Bus activation for starting services, 
+offers on-demand starting of daemons, keeps track of processes using Linux control groups, supports snapshotting and 
+restoring of the system state, maintains mount and automount points and implements an elaborate transactional 
+dependency-based service control logic. It can work as a drop-in replacement for sysvinit.
