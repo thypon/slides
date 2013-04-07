@@ -3,16 +3,51 @@ author: Andrea Brancaleoni
 
 ## Cos'è un Sistema di Avvio
 
+Il compito di avviare e riavviare il computer è svolto da uno speciale componente chiamato *init*. *Init* è responsabile di terminare l'avvio dopo che il kernel è stato caricato.
+
+*Init* Avvia altri programmi detti Demoni. Ad esempio avviano il server grafico in un sistema Desktop o un server SQL o HTTP in sistemi Server.
+
+## Reliability
+
+Reliability and safety is critically important for an init daemon since:
+- it runs as the super-user.
+- it is responsible for managing critical system services.
+- if init exits for any reason, the kernel panics.
+
+the init system itself must not be compromised since if it fails, the kernel panics. Therefore, any functionality which is not considered "core" functionality is farmed out to other daemons.
+
+## Recall: Demone
+
+"I demoni sono personaggi della mitologia greca, alcuni dei quali eseguivano compiti di cui gli dei non potevano occuparsi" - Wikipedia
+
 ## Linea Evolutiva
 
-- Sistemi di avvio sequenziali: appartengono a questa famiglia tutti i primi sistemi di avvio dove o non si era in possesso di architetture multicore/manycore o, dove c'erano, non era necessario accendere/spegnere la macchina in continuazione ma era più importante l'uptime. (EG. System-V init, BSD-Style init)
-- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi non tra loro indipendenti. (EG: OpenRC, INITNG)
+- Sistemi di avvio sequenziali: sistemi di avvio in cui ogni demone è avviato in sequenza.
+appartengono a questa famiglia tutti i primi sistemi di avvio dove o non si era in possesso di architetture multicore/manycore o non era necessario accendere/spegnere la macchina in continuazione ma era più importante l'uptime. (EG. System-V init, BSD-Style init)
+- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi tra loro indipendenti. (EG: OpenRC, INITNG)
 - Sistemi di avvio Startless/Event Based: spesso forniscono funzionalità simili ai sistemi di avvio gerarchico, tuttavia il loro funzionamento interno è diverso. (EG: LaunchD, Upstart, SystemD)
+
+## Linea Evolutive
+
+@grafico temporale dei maggiori sistemi d'avvio
+
+## Caratteristiche sistemi di avvio
+
+@tabella incrociata feature diversi sistemi d'avvio
 
 ## System-V init
 
-Init is the parent of all processes. Its primary role is to create processes from a script stored in the file /etc/inittab.
-It also contains well known and used utilities like reboot, shutdown, killall, poweroff, tellinit, sulogin, wall, etc.
+System-V init è lo standard per quanto riguarda i sistemi di avvio su Linux, comprese le alternative completamente compatibili (e ovviamente su System-V). In questo senso è anche il sistema di avvio più diffuso. Il suo ruolo principlae è di creare processi da uno script in /etc/inittab.
+
+SYSVINIT, L'implementazione più famosa, contiene anche altri programmi che gestiscono l'avvio/il riavvio/lo spegnimento del computer. Ad esempio contiene:
+- reboot
+- shutdown
+- killall
+- poweroff
+- tellinit
+- sulogin
+- wall
+- etc.
 
 ## LaunchD
 
@@ -39,8 +74,6 @@ stopping them during shutdown and supervising them while the system is running.
 
 It was originally developed for the Ubuntu distribution, but is intended to be suitable for deployment in all Linux 
 distributions as a replacement for the venerable System-V init.
-
-
 
 ## SystemD
 
