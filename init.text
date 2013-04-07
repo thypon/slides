@@ -16,7 +16,9 @@ It also contains well known and used utilities like reboot, shutdown, killall, p
 
 ## LaunchD
 
-LaunchD è un framework open-source per gestire l'avvio, lo spegimento di altri demoni, applicazioni, processi e script. È stato scritto da Dave Zarzycki alla Apple, dove è stato introdotto, per la prima volta in Mac OS X Tiger, era licenziato sotto Apple Public License ma per facilitarne l'adozione la licenza fu cambiata con la Apache.
+LaunchD è un framework open-source per gestire avvio e spegimento di altri demoni, applicazioni, processi e script. 
+È stato scritto da Dave Zarzycki alla Apple, dove è stato introdotto, per la prima volta in Mac OS X Tiger, 
+era licenziato sotto Apple Public License ma, per facilitarne l'adozione, la licenza fu cambiata con la Apache.
 
 ## Caratteristiche di LaunchD
 LaunchD è essenzialmente un sostituto per:
