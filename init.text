@@ -1,6 +1,7 @@
 title: Sistemi di Avvio
 author: Andrea Brancaleoni
 
+
 ## Cos'è un Sistema di Avvio
 
 Il compito di avviare e riavviare il computer è svolto da uno speciale componente chiamato *init*. *Init* è responsabile di terminare l'avvio dopo che il kernel è stato caricato.
@@ -64,7 +65,7 @@ LaunchD è essenzialmente un sostituto per:
 - crond / atd
 - watchdogd
 
-## ![Upstart](upstart80.png) 
+## Upstart
 
 Upstart è un sostituto *event-based* del demone di init. Fu originariamente sviluppato per Ubuntu, ma col tempo è stato adottato
 da tutte le principali distribuzioni Desktop.
@@ -132,7 +133,7 @@ funzionamento
      (anche questo dichiarato in /etc/inittab come vedremo in seguito)
      passando in tutti quelli intermedi. Viceversa allo shutdown.
 
-## Runlevel in Debian ![Debian](debian-logo-vertical.png)
+## Runlevel in Debian
 
 - Runlevel 0 è halt
 - Runlevel 1 è single-user mode
@@ -421,3 +422,8 @@ Data l'estrema semplicità dei file di configurazione upstart, posso mostrarvi l
 ## Cron 4 SysV
 
 ![cron](sysv-cron.png)
+
+## Addio e grazie per tutto il pesce
+
+![fish](fish.png)
+

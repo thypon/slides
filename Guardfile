@@ -1,6 +1,6 @@
 guard :shell do
   watch /^(.*\.text)$/ do |match|
-    `slideshow --output target #{match} --h2`
-    `cp *.png target`
+    `slideshow --template csss --output target #{match} --h2`
+    `cp images/*.png target`
   end
 end
