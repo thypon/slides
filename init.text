@@ -64,7 +64,7 @@ LaunchD è essenzialmente un sostituto per:
 - crond / atd
 - watchdogd
 
-## Upstart
+## ![Upstart](upstart80.png) 
 
 Upstart è un sostituto *event-based* del demone di init. Fu originariamente sviluppato per Ubuntu, ma col tempo è stato adottato
 da tutte le principali distribuzioni Desktop.
@@ -104,5 +104,189 @@ Non avrai altro Dio al di fuori di me
 
 ## Crash Course: SystemVinit
 
+- Una volta lanciato init, il sistema operativo è formalmente pronto.
+- Init ha il compito di generare tutti gli altri processi necessari al sistema. 
+Esempio classico di processo generato da init è getty (attiva il terminale e inizia la procedura di accesso).
+- Init, per sapere cosa fare, utilizza come proprio file di configurazione /etc/inittab
+- /etc/inittab divide i vari programmi da lanciare all'avvio in livelli di esecuzione chiamati “runlevel”.
+
+## Getty
+
+![Getty](getty.png)
+
+## Runlevel e init
+
+L'avvio dei vari processi del sistema può essere suddiviso in 6 livelli di
+funzionamento
+
+- Runlevel 0 (speciale): sistema completamente fermo
+- Runlevel 1 o S: modalità monoutente (single user mode)
+- Runlevel da 2 a 5: modalità multiutente
+- Runlevel 6: riavvio
+    
+- /etc/inittab :
+  1. Indica ad init di lanciare e controllare che siano sempre attivi
+     alcuni processi (ad esempio getty).
+  2. In generale definisce cosa fare per ciascun runlevel.
+     All'avvio il sistema si porta dal runlevel 0 fino al runlevel di default
+     (anche questo dichiarato in /etc/inittab come vedremo in seguito)
+     passando in tutti quelli intermedi. Viceversa allo shutdown.
+
+## Runlevel in Debian ![Debian](debian-logo-vertical.png)
+
+- Runlevel 0 è halt
+- Runlevel 1 è single-user mode
+- Runlevel 2 -> 5 sono multiutente, di default solo il 2 è utilizzato. Gli altri sono a uso dell'utente.
+- Runlevel 6 è riavvio
+
+## Init Forking Order
+
+![Init Forking Order](initfork.png)
+
+## Init Startup
+
+![Init Startup](initstart.png)
+
+## Init Stop
+
+![Init Stop](initstop.png)
+
+## Init Script Scaffold
+
+    #!/bin/sh
+
+    case in "$1"
+    start)
+      echo "Starting!"
+    stop)
+      echo "Stopping!"
+    restart)
+      echo "Restarting!"
+    esac
+
+## Controllare servizi manualmente
+
+Dopo esserci mossi nella directory contente gli script di servizio basterà invocarli con gli argomenti (start|stop|restart).
+
+In Debian:
+
+- `/etc/init.d/service start` 
+
+  _avvia il servizio_
+- `/etc/init.d/service stop` 
+
+  _ferma il servizio_
+- `/etc/init.d/service restart` 
+
+  _riavvia il servizio_
+
+## Comando: halt
+`halt [options]`
+
+Spegne il computer. Inserisce una note in /var/log/wtmp; se il sistema è nel runlevel 0 o 6 ferma tutti i processi; altrimenti richiama **shutdonw -h**
+
+### Opzioni
+**-d** non scrive in /var/log/wtmp.
+
+**-f** Chiama **halt** anche se **shutdown -nf** sarebbe stato chiamato (i.e. chiama **halt** anche se non si è nel runlevel 0 o 6).
+
+**-h** Mette l'hard disk in stand-by prima di chiamare **halt** o spegnere.
+
+**-i** Spegne le interfacce di rete prima dell'**halt**.
+
+**-n** Non sincronizza prima di spegnere o riavviare.
+
+**-p** Spegne mentre si sta fermando il sistema.
 
 
+## Comando: reboot
+
+`reboot [options]`
+
+Chiude i filesystem, spegne il sistema, successivamente riavvia. Poichè questo comando ferma istantaneamente tutti i processi, dovrebbe essere utilizzato solamente in single-user mode. Se il sistema non è nel runlevel 0 o 6, **reboot** richiama **shutdown -r**.
+
+### Opzioni
+**-f** Chiama **reboot** anche quando **shutdown** verrebbe invocato.
+
+**-i** Spegne tutte le interfacce di rete prima di riavviare.
+
+**-n** Non invoca **sync** prima di spegnere.
+
+**-w** Non esegue veramente, scrive solamente il log su /var/log/wtmp.
+
+## Comando: runlevel
+`runlevel [utmp]`
+
+Mostra il runlevel precedente e il corrente come è stato salvato in *utmp*. La locazione standard di *utmp* è in */var/run/utmp*.
+
+## Comando: shutdown
+
+`shutdown [options] when [message]`
+
+Termina tutti i processi. *when* può essere un momento specifico nel formato *ore:minuti*, o un numero di minuti da aspettare nel formato *+m* o **now**. Un messaggioin broadcast viene notificato a tutti gli utenti per deautenticarli. Ai processi viene inviato un **SIGTERM** per permettergli di uscire normalmente. */etc/init* viene chiamato per effettuare lo shutdown, che consiste nel portare il sistema al runlevel 0.
+
+### Opzioni
+**-a** Quando viene chiamato da **init**, spegne solo se uno degli utente in */shutdown.allow* è loggato attualmente.
+
+**-c** Annulla un procedimento di spegnimento in corso.
+
+**-f** Riavvia velocemente, eliminando ogni chiamata a **fsck** quando si sta riavvindo.
+
+**-F** Forza un controllo del filesystem al riavvio.
+
+**-h** Manda il segnale di Halt o spegne il computer quando **shutdown** è uscito. Questo dipende dal sistema hardware e dal BIOS.
+
+**-H** Ferma il sistema quando **shutdown** è uscito.
+
+**-k** Stampa i messaggi di warning, ma ferma lo shutdown attuale.
+
+**-P** Spegne il computer quando **shutdown** ha terminato.
+
+**-r** Riavvia il sistema quando **shutdown** ha terminato.
+
+## Comando: telinit
+
+`telinit [options] [runlevel]`
+
+Segnala a **init** di cambiare il runlevel di sistema. **telinit** è in SysV solamente un link a **init**, il padre di tutti i processi.
+
+### Opzioni
+
+**-t** *seconds* Manda un SIGKILL dopo tot secondi (*seconds*) il SIGTERM. Di default sono 20.
+
+### Runlevels
+
+Qualche runlevel cambia da distribuzione a distribuzione, ma alcuni sono standard:
+
+**0** Manda il segnale di Halt
+
+**1,s,S** Modalità single-user
+
+**6** Riavvia il sistema
+
+**a,b,c** Processa solo le linee in */etc/inittab/* che sono marcate con *a*, *b* o *c*
+
+**q, Q** Rilegge */etc/inittab*
+
+## Comando: uptime
+
+`uptime [options]`
+
+Stampa il tempo corrente, quanto è stato attivo il sistema, il numero di utenti attualmente loggati (che può includere il proprio utente molte volte), e il carico medio del sistema.
+
+### Opzioni
+
+**-V** Stampa la versione e esce.
+
+## SysV punti a favore
+
+- Semplicità: Creare file di servizi è facile con SystemV init come è facile creare uno script di shell. Per abilitare o disabilitare un servizio in un particolare Runlevel c'è solo bisogno di aggiungere/rimuovere un link simbolico in un particolare insieme di directory
+- Ordine di esecuzione dei servizi garantito: questo è possibile invocando gli init script puntati dai link simbolici in sequenza. L'ordine relativo in cui i servizi sono invocati da init dipende da un prefisso numerico nel nome. Servizi con numeri bassi sono avviati prima di servizi con numeri alti.
+
+## SysV svantaggi
+- Prestazioni non ottimali: quando fu introdotto il sistema di avvio init era appropriato, ma in moderni sistemi sembra "lento" nel senso che non sfrutta il parallelismo. Un "hack" utilizzata da molti Amministratori è di evitare la serializzazione mandando in background i servizi che si stanno aviando.
+- Server Centric: quando i Computer venivano ancora chiamati Mainframe e i riavvii erano rari, l'approccio di SysV era perfetto. Ora buona parte degli utenti Linux Desktop o Mobile, che usano il dispositivo in mobilità, si aspettano di riavviare il computer anche molte volte durante la giornata.
+- Assume inesistenza di device HotPlug: SysV assume non sia possibile aggiungere/rimuovere una risorsa hardware a runtime. Per questo è stato progettato per non reagire proattivamente.
+- Ogni script esegue operazioni standard: Ad esempio, eseguono controlli iniziali, si assicurano non ci sia un'altra istanza attiva del servizio, controllano non ci siano cartello o file in utilizzo, rimuovo la cache vecchia, si assicurano che i demoni dipendenti siano in esecuzione e lanciano il servizio. La cosa più difficile e costosa è controllare se i demoni dipendenti sono avviati. La specifica LSB contiene degli helper che aiutano a svolgere queste operazioni, ma probabilmente dovrebbe essere il demone di Init a svolgerle.
+
+## Crash Course: Upstart
