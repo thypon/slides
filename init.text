@@ -379,9 +379,14 @@ Stampa il tempo corrente, quanto è stato attivo il sistema, il numero di utenti
 ## Job
 Un job è un'unità di lavoro. In Upstart ne esistono di 3 tipi:
 
-- Task Job: è considerato un piccolo programma/script che può impiegare anche molto tempo a terminare, ma sappiamo che terminerà in un tempo fissato. Per esempio cancellare i file temporanei dall'hard disk oppure montare i file systems
-- Service Job: è un processo che rimane avviato per sempre a meno che non venga fermato esplicitamente.
-- Abstract Job: è job che non ha sezioni *script* ne sezioni *exec*. Job di questo tipo possono essere avviati e stoppati ma non hanno un PID association.
+- **Task Job**:
+    * Piccolo programma o script.
+    * Termina sicuramente in un tempo fissato. 
+- **Service Job**: rimane avviato per sempre a meno che non venga fermato esplicitamente.
+- **Abstract Job**: 
+    * Non ha sezioni *script* ne sezioni *exec*. 
+    * Non ha un PID associato.
+    * Può essere avviato/stoppato.
 
 ## Job States
 
@@ -393,19 +398,9 @@ Ogni Job è definito in un file di configurazione in plain text. I file di confi
 
 `<name>.conf`
 
-### System Job## SysV svantaggi
-
-Ogni Job di sistema è contenuto di default nella cartella:
+DEFAULT Ogni Job di sistema è contenuto nella cartella:
 
 `/etc/init`
-
-### User Job
-
-Gli User JOB sono contenuti nella cartella:
-
-'$HOME/.init/'
-
-Tuttavia non sono attivi di default.
 
 ## Job Example
 
@@ -446,33 +441,24 @@ Tuttavia non sono attivi di default.
 
 ## Events
 
-Anche degli eventi esistono 3 incarnazioni.
+Anche degli eventi esistono 3 incarnazioni:
 
-Per generare gli eventi viene usato initctl.
-
-### Segnali
-
-I segnali sono eventi lanciati in maniera asincrona. Colui che annuncia questi eventi non aspetta che l'evento venga passato a tutti, ne aspetta la loro reazione.
-
-Per inviare segnali bisogna invocare il comando:
-
-`initctl emit --no-wait SIGNAL`
-
-### Metodi
-
-Gli eventi metodo sono degli eventi sincroni che sono solitamente associati a dei task. Funzionano come metodi o chiamate a funzione.
-
-Per emettere un evento metodo basta:
-
-`initctl emit METHOD`
- 
-### Hooks
-
-Sono degli speciali segnali sincroni a cui non ci si aspetta che risponda nessuno con compiti "lunghi". Ad esempio vengono usati per notificare tutti quando un Job si sta avviando; in questo caso manda un hook **starting** a tutto il sistema.
+- **Segnali**:
+    * Asincroni.
+    * Colui che lancia l'evento non aspetta che vengano accettati da tutti.
+    * `initctl emit --no-wait SIGNAL`
+- **Metodi**:
+    * Sincroni.
+    * Funzionano come chiamate a funzione.
+    * `initctl emit METHOD`
+- **Hooks**:
+    * Job speciali
+    * Simili ai segnali ma Sincroni.
+    * EG. **starting** e **stopping**
 
 ## Stanzas
 
-Le *stanzas* è il termine utilizzato per identificare i comandi di configurazione che sono accettati da un file di configurazione di JOB di Upstart.
+Le *stanzas* identificano i comandi di configurazione, accettati da un file di configurazione di JOB.
 
 ## Elenco Stanzas
 
