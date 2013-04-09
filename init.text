@@ -130,6 +130,7 @@ Cos'è:
 - Service manager per Linux
 - Compatibile con SysV e LSB scripts 
 - Ingegnerizzato da Lennart Poettering (Red Hat)
+
 Fornisce:
 
 - Parallelizzazione aggressiva
