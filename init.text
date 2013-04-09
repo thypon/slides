@@ -152,11 +152,9 @@ Non avrai altro Dio al di fuori di me
 
 ## Crash Course: SystemVinit
 
-- Una volta lanciato init, il sistema operativo è formalmente pronto.
-- Init ha il compito di generare tutti gli altri processi necessari al sistema. 
-Esempio classico di processo generato da init è getty (attiva il terminale e inizia la procedura di accesso).
-- Init, per sapere cosa fare, utilizza come proprio file di configurazione /etc/inittab
-- /etc/inittab divide i vari programmi da lanciare all'avvio in livelli di esecuzione chiamati “runlevel”.
+- Lanciato init -> SO pronto.
+- Genera i processi necessari al sistema. (EG. getty)
+- Legge le configurazioni da /etc/inittab
 
 ## Getty
 
@@ -164,8 +162,7 @@ Esempio classico di processo generato da init è getty (attiva il terminale e in
 
 ## Runlevel e init
 
-L'avvio dei vari processi del sistema può essere suddiviso in 6 livelli di
-funzionamento
+Esistono 6 livelli di funzionamento:
 
 - Runlevel 0 (speciale): sistema completamente fermo
 - Runlevel 1 o S: modalità monoutente (single user mode)
@@ -173,18 +170,42 @@ funzionamento
 - Runlevel 6: riavvio
     
 - /etc/inittab :
-  1. Indica ad init di lanciare e controllare che siano sempre attivi
-     alcuni processi (ad esempio getty).
-  2. In generale definisce cosa fare per ciascun runlevel.
-     All'avvio il sistema si porta dal runlevel 0 fino al runlevel di default
-     (anche questo dichiarato in /etc/inittab come vedremo in seguito)
-     passando in tutti quelli intermedi. Viceversa allo shutdown.
+    1. Indica ad init di lanciare e controllare che siano sempre attivi
+       alcuni processi (ad esempio getty).
+    2. Definisce cosa fa ogni runlevel.
+       All'avvio il sistema si porta dal runlevel 0 fino al runlevel di default
+       passando in tutti quelli intermedi. Viceversa allo shutdown.
+
+## Esempio di inittab
+
+    id:2:initdefault:
+
+    l0:0:wait:/etc/init.d/rc 0
+    l1:1:wait:/etc/init.d/rc 1
+    l2:2:wait:/etc/init.d/rc 2
+    l3:3:wait:/etc/init.d/rc 3
+    l4:4:wait:/etc/init.d/rc 4
+    l5:5:wait:/etc/init.d/rc 5
+    l6:6:wait:/etc/init.d/rc 6
+
+    pf::powerwait:/etc/init.d/powerfail start
+    pn::powerfailnow:/etc/init.d/powerfail now
+    po::powerokwait:/etc/init.d/powerfail stop
+
+    1:2345:respawn:/sbin/getty 38400 tty1
+    2:23:respawn:/sbin/getty 38400 tty2
+    3:23:respawn:/sbin/getty 38400 tty3
+    4:23:respawn:/sbin/getty 38400 tty4
+    5:23:respawn:/sbin/getty 38400 tty5
+    6:23:respawn:/sbin/getty -f /etc/issue.welcome2l 38400 tty6
 
 ## Runlevel in Debian
 
 - Runlevel 0 è halt
 - Runlevel 1 è single-user mode
-- Runlevel 2 -> 5 sono multiutente, di default solo il 2 è utilizzato. Gli altri sono a uso dell'utente.
+- Runlevel 2 -> 5:
+    - Multiutente
+    - DEFAULT: Solo il 2 è utilizzato
 - Runlevel 6 è riavvio
 
 ## Init Forking Order
@@ -217,19 +238,13 @@ funzionamento
 
 ## Controllare servizi manualmente
 
-Dopo esserci mossi nella directory contente gli script di servizio basterà invocarli con gli argomenti (start|stop|restart).
+Dopo esserci mossi nella directory contenente gli script di servizio basterà invocarli con gli argomenti start/stop/restart.
 
 In Debian:
 
-- `/etc/init.d/service start` 
-
-  _avvia il servizio_
-- `/etc/init.d/service stop` 
-
-  _ferma il servizio_
-- `/etc/init.d/service restart` 
-
-  _riavvia il servizio_
+- _avvia il servizio_: `/etc/init.d/service start` 
+- _ferma il servizio_: `/etc/init.d/service stop` 
+- _riavvia il servizio_: `/etc/init.d/service restart` 
 
 ## Comando: halt
 `halt [options]`
@@ -331,14 +346,33 @@ Stampa il tempo corrente, quanto è stato attivo il sistema, il numero di utenti
 
 ## SysV punti a favore
 
-- Semplicità: Creare file di servizi è facile con SystemV init come è facile creare uno script di shell. Per abilitare o disabilitare un servizio in un particolare Runlevel c'è solo bisogno di aggiungere/rimuovere un link simbolico in un particolare insieme di directory
-- Ordine di esecuzione dei servizi garantito: questo è possibile invocando gli init script puntati dai link simbolici in sequenza. L'ordine relativo in cui i servizi sono invocati da init dipende da un prefisso numerico nel nome. Servizi con numeri bassi sono avviati prima di servizi con numeri alti.
+- **Semplicità**: 
+    * Creare servizi è facile con SystemV init come è facile creare uno script di shell. 
+    * Per abilitare/disabilitare un servizio in un particolare Runlevel basta aggiungere/rimuovere un link simbolico in una directory
+- **Ordine di esecuzione dei servizi garantito**: 
+    * L'ordine di esecuzione è deterministico e determinato.
+    * Ordine relativo dei servizi dipendente dal prefisso numerico nel nome.
 
 ## SysV svantaggi
-- Prestazioni non ottimali: quando fu introdotto il sistema di avvio init era appropriato, ma in moderni sistemi sembra "lento" nel senso che non sfrutta il parallelismo. Un "hack" utilizzata da molti Amministratori è di evitare la serializzazione mandando in background i servizi che si stanno aviando.
-- Server Centric: quando i Computer venivano ancora chiamati Mainframe e i riavvii erano rari, l'approccio di SysV era perfetto. Ora buona parte degli utenti Linux Desktop o Mobile, che usano il dispositivo in mobilità, si aspettano di riavviare il computer anche molte volte durante la giornata.
-- Assume inesistenza di device HotPlug: SysV assume non sia possibile aggiungere/rimuovere una risorsa hardware a runtime. Per questo è stato progettato per non reagire proattivamente.
-- Ogni script esegue operazioni standard: Ad esempio, eseguono controlli iniziali, si assicurano non ci sia un'altra istanza attiva del servizio, controllano non ci siano cartelle o file in utilizzo, rimuovo la cache vecchia, si assicurano che i demoni dipendenti siano in esecuzione e lanciano il servizio. La cosa più difficile e costosa è controllare se i demoni dipendenti sono avviati. La specifica LSB contiene degli helper che aiutano a svolgere queste operazioni, ma probabilmente dovrebbe essere il demone di Init a svolgerle.
+- **Prestazioni non ottimali**: 
+    * non sfrutta il parallelismo.
+    * "hack" mandare il demone in background all'avvio -> dimostra il bisogno di maggiore reattività all'avvio.
+- **Server Centric**:
+    * I riavvii nei mainframe erano rari.
+    * Utenti Desktop/Mobile sono usi a riavvii multipli durante la giornata.
+
+## SysV svantaggi
+- **Hotplug non gestito**: 
+    * Progettato per non aggiungere/rimuovere risorse a runtime.
+    * Non reagisce proattivamente ai cambi di sistema.
+- **script esegue operazioni standard**: 
+    * Esegue controlli iniziali.
+    * si assicura non ci sia un'altra istanza attiva.
+    * controlla non ci siano cartelle o file in utilizzo.
+    * rimuovo i file temporanei.
+    * si assicura che i demoni dipendenti siano in esecuzione. Ma:
+        - Operazione costosa.
+        - Dovrebbe essere lo stesso *init* a occuparsene.
 
 ## Crash Course: Upstart
 
@@ -359,7 +393,7 @@ Ogni Job è definito in un file di configurazione in plain text. I file di confi
 
 `<name>.conf`
 
-### System Job
+### System Job## SysV svantaggi
 
 Ogni Job di sistema è contenuto di default nella cartella:
 
