@@ -1,7 +1,6 @@
 title: Sistemi di Avvio
 author: Andrea Brancaleoni
 
-
 ## Cos'è un Sistema di Avvio
 
 Il compito di avviare e riavviare il computer è svolto da uno speciale componente chiamato *init*. *Init* è responsabile di terminare l'avvio dopo che il kernel è stato caricato.
