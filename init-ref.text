@@ -3,54 +3,30 @@ author: Andrea Brancaleoni
 
 ## Cos'è un Sistema di Avvio
 
-Un sistema di *init*:
+Il compito di avviare e riavviare il computer è svolto da uno speciale componente chiamato *init*. *Init* è responsabile di terminare l'avvio dopo che il kernel è stato caricato.
 
-- Avvia/riavvia il computer
-- Termina l'avvio dopo che il kernel è stato caricato
-- Avvia altri programmi (DEMONI). (EG. Server Grafico, Server SQL o HTTP)
+*Init* Avvia altri programmi detti Demoni. Ad esempio avvia il server grafico in un sistema Desktop o un server SQL o HTTP in sistemi Server.
 
 ## Affidabilità
 
-*Init* deve essere affidabile perchè:
+L'affidabilità e la sicurezza è molto importante per un demone di init dato che:
 
 - Gira in modalità super utente.
-- Controlla servizi di sistema critici.
-- *init* muore -> kernel panic.
+- É responsabile di controllare servizi di sistema critici.
+- Se init muore per qualsiasi ragione, il kernel va in panic.
+
+Il sistema di init non deve essere compromesso, dato che se fallisce, il kernel va in panic. Dunque, tutte le funzionalità che non sono considerate "core" devono essere tolte e messe negli altri demoni.
 
 ## Recall: Demone
 
 "I demoni sono personaggi della mitologia greca, alcuni dei quali eseguivano compiti di cui gli dei non potevano occuparsi" - Wikipedia
 
-## Recall: Demone
-
-![Demone](daemon.png)
-
 ## Linea Evolutiva
 
-- Sistemi di avvio sequenziali: 
-    * Ogni demone è avviato in sequenza.
-    * Non esiste parallelismo
-- Sistemi di avvio gerarchici: 
-    * Forniscono funzionalità di avvio sequenziale
-    * Forniscono parallelismo
-    * Avviano servizi indipendenti in parallelo
-- Sistemi di avvio Startless/Event Based: 
-    * Forniscono funzionalità di avvio gerarchico
-    * On-Demand Loading
-    * Event Systems
-
-## Linee Evolutive: Esempi
-
-- Sistemi di avvio sequenziali:
-    * System-V init
-    * BSD-Style init
-- Sistemi di avvio gerarchici:
-    * OpenRC
-    * InitNG
-- Sistemi di avvio startless/event based:
-    * Upstart
-    * LaunchD
-    * SystemD
+- Sistemi di avvio sequenziali: sistemi di avvio in cui ogni demone è avviato in sequenza.
+appartengono a questa famiglia tutti i primi sistemi di avvio dove o non si era in possesso di architetture multicore/manycore o non era necessario accendere/spegnere la macchina in continuazione ma era più importante l'uptime. (EG. System-V init, BSD-Style init)
+- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi tra loro indipendenti. (EG: OpenRC, InitNG)
+- Sistemi di avvio Startless/Event Based: spesso forniscono funzionalità simili ai sistemi di avvio gerarchico, tuttavia il loro funzionamento interno è diverso. (EG: LaunchD, Upstart, SystemD)
 
 ## Linea Evolutive
 
@@ -58,20 +34,9 @@ Un sistema di *init*:
 
 ## System-V init
 
-Cos'è:
+System-V init è lo standard per quanto riguarda i sistemi di avvio su Linux, comprese le alternative completamente compatibili (e ovviamente su System-V). In questo senso è anche il sistema di avvio più diffuso. Il suo ruolo principlae è di creare processi da uno script in /etc/inittab.
 
-* È un demone di init
-* Sistema Standardizzato LSB
-* Molte implementazioni esistenti
-* Avvia i demoni
-* Crea i processi leggendo da /etc/inittab
-
-## sysvinit
-
-È L'implementazione più famosa di System-V init.
-
-Contiene anche:
-
+SYSVINIT, L'implementazione più famosa, contiene anche altri programmi che gestiscono l'avvio/il riavvio/lo spegnimento del computer. Ad esempio contiene:
 - reboot
 - shutdown
 - killall
@@ -79,22 +44,16 @@ Contiene anche:
 - tellinit
 - sulogin
 - wall
+- etc.
 
 ## LaunchD
 
-Cos'è:
+LaunchD è un framework open-source per gestire avvio e spegimento di altri demoni, applicazioni, processi e script. 
+È stato scritto da Dave Zarzycki alla Apple, dove è stato introdotto, per la prima volta in Mac OS X Tiger, 
+era licenziato sotto Apple Public License ma, per facilitarne l'adozione, la licenza fu cambiata con la Apache.
 
-* Un framework open-source per gestire avvio/spegnimento di:
-    - demoni
-    - applicazioni
-    - processi
-    - script
-* Scritto da Dave Zarzycki (Apple inc.)
-* Licenza Apache (Inizialmente Apple Public License)
-
-## Cosa sostituisce LaunchD
-
-LaunchD sostituisce:
+## Caratteristiche di LaunchD
+LaunchD è essenzialmente un sostituto per:
 
 - init
 - rc
@@ -107,44 +66,37 @@ LaunchD sostituisce:
 
 ## Upstart
 
-Cos'è:
-
-- Sostituisce *init*
-- *event-based*
-- Sviluppato da Ubuntu
-- Adottato da tutte le principali distribuzioni Desktop
+Upstart è un sostituto *event-based* del demone di init. Fu originariamente sviluppato per Ubuntu, ma col tempo è stato adottato
+da tutte le principali distribuzioni Desktop.
 
 ## Caratteristiche di Upstart
 
-- Task/Servizi avviati/fermati tramite eventi
-- Eventi generati mentre Task/Servizi avviati/fermati
-- Eventi mandati in broadcast
-- Sistema di respawning dei servizi morti
-- Comunicazione con Upstart attraverso D-BUS
-- Servizi Utente
+- I Task e i Servizi sono avviati e fermati tramite eventi
+- Gli eventi vengono generati mentre i servizi vengono avviati e fermati
+- Gli eventi possono essere ascoltati da qualsiasi altro processo nel sistema
+- I servizi possono essere riavviati se muoiono inaspettatamente
+- La comunicazione con il demone di init avviene attraverso D-BUS
+- Servizi Utente, che gli utenti stessi possono avviare e stoppare
 
 ## SystemD
 
-Cos'è:
-
-- Service manager per Linux
-- Compatibile con SysV e LSB scripts 
-- Ingegnerizzato da Lennart Poettering (Red Hat)
-Fornisce:
-
-- Parallelizzazione aggressiva
-- Avvio servizi tramite Socket/D-Bus
-- Avvio On-Demand
-- Traccia i processi con CGROUPs
-- Mantiene i punti di Mount/AutoMount
+SystemD è un service manager per Linux, compatibile con SysV e gli init scripts LSB. SystemD fornisce parallelizzazione aggressiva, usa Socket
+e D-Bus per avviare i servizi, offre avvio on-demand, tiene traccia dei processi attivi con i control groups (CGROUP), mantiene i punti di mount e
+automount e e implementa un elaborata logica transazionale dependency based.
 
 ## Recall: The Commandment
 
 Non avrai altro Dio al di fuori di me
 
-## Recall: The Commandment
+## Caratteristiche di SystemD
 
-![GOD](god.png)
+- Parallelizzazione estrema
+- Attivazione Socket Based (inetd)
+- Bus Based Activation tramite D-BUS
+- Caricamento On-Demand, anche di File-System (autofs)
+- No Shell Scripts
+- Monitoraggio attraverso Control Groups
+
 
 ## Parallelizzazione
 
