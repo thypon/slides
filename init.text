@@ -155,13 +155,16 @@ funzionamento
 
     #!/bin/sh
 
-    case in "$1"
+    case "$1" in
     start)
       echo "Starting!"
+      ;;
     stop)
       echo "Stopping!"
+      ;;
     restart)
       echo "Restarting!"
+      ;;
     esac
 
 ## Controllare servizi manualmente
@@ -290,3 +293,131 @@ Stampa il tempo corrente, quanto è stato attivo il sistema, il numero di utenti
 - Ogni script esegue operazioni standard: Ad esempio, eseguono controlli iniziali, si assicurano non ci sia un'altra istanza attiva del servizio, controllano non ci siano cartello o file in utilizzo, rimuovo la cache vecchia, si assicurano che i demoni dipendenti siano in esecuzione e lanciano il servizio. La cosa più difficile e costosa è controllare se i demoni dipendenti sono avviati. La specifica LSB contiene degli helper che aiutano a svolgere queste operazioni, ma probabilmente dovrebbe essere il demone di Init a svolgerle.
 
 ## Crash Course: Upstart
+
+## Job
+Un job è un'unità di lavoro. In Upstart ne esistono di 3 tipi:
+
+- Task Job: è considerato un piccolo programma/script che può impiegare anche molto tempo a terminare, ma sappiamo che terminerà in un tempo fissato. Per esempio cancellare i file temporanei dall'hard disk oppure montare i file systems
+- Service Job: è un processo che rimane avviato per sempre a meno che non venga fermato esplicitamente.
+- Abstract Job: è job che non ha sezioni *script* ne sezioni *exec*. Job di questo tipo possono essere avviati e stoppati ma non hanno un PID association.
+
+## Job States
+
+![Upstart Job States](upstart-states.png)
+
+## File di Configurazione
+
+Ogni Job è definito in un file di configurazione in plain text. I file di configurazione hanno un nome simile a:
+
+`<name>.conf`
+
+### System Job
+
+Ogni Job di sistema è contenuto di default nella cartella:
+
+`/etc/init`
+
+### User Job
+
+Gli User JOB sono contenuti nella cartella:
+
+'$HOME/.init/'
+
+Tuttavia non sono attivi di default.
+
+## Job Example
+
+    # Un Job astratto può anche non contenere nessuna linea
+    # Per informazione inseriamo l'autore del JOB
+    author "foo"
+    # E qui sotto la descrizione del job stesso
+    description "questo è uno scaffold di job astratto"
+    # Questo è una JOB configuration completa
+
+## Comando: initctl
+`initctl [options] command`
+
+**initctl** manda comandi al demone **init** Upstart. Usabile per monitorare Jobs e Eventi, chiamare Jobs direttamente o mandare eventi al sistema.
+
+### Opzioni
+**--no-wait** Quando stiamo usando il comando **start**, **stop**, **emit**, esce immediatamente senza aspettare che la richiesta sia finita.
+
+**--user** Viene avviato in user-mode
+
+### Comandi
+
+**list**
+
+**emit** Emette un evento al quale **init** può rispondere. Gli argomenti dell'evento possono essere passati in una lista di stringhe.
+
+**list** elenca tutti i Job conosciuti.
+
+**start JOB** avvia un Job con il nome JOB
+
+**stop JOB** ferma un Job con il nome JOB
+
+**restart JOB** riavvia un Job con il nome JOB
+
+**reload JOB** invia il segnale HUP al Job con il nome JOB
+
+**status JOB** visualizza lo stato del Job con il nome JOB
+
+## Events
+
+Anche degli eventi esistono 3 incarnazioni.
+
+Per generare gli eventi viene usato initctl.
+
+### Segnali
+
+I segnali sono eventi lanciati in maniera asincrona. Colui che annuncia questi eventi non aspetta che l'evento venga passato a tutti, ne aspetta la loro reazione.
+
+Per inviare segnali bisogna invocare il comando:
+
+`initctl emit --no-wait SIGNAL`
+
+### Metodi
+
+Gli eventi metodo sono degli eventi sincroni che sono solitamente associati a dei task. Funzionano come metodi o chiamate a funzione.
+
+Per emettere un evento metodo basta:
+
+`initctl emit METHOD`
+ 
+### Hooks
+
+Sono degli speciali segnali sincroni a cui non ci si aspetta che risponda nessuno con compiti "lunghi". Ad esempio vengono usati per notificare tutti quando un Job si sta avviando; in questo caso manda un hook **starting** a tutto il sistema.
+
+## Stanzas
+
+Le *stanzas* è il termine utilizzato per identificare i comandi di configurazione che sono accettati da un file di configurazione di JOB di Upstart.
+
+## Elenco Stanzas
+
+![Stanza1](stanzas.png)
+
+## Elenco Stanzas
+![Stanza2](stanzas2.png)
+
+## Configuration Example
+
+Data l'estrema semplicità dei file di configurazione upstart, posso mostrarvi la configurazione completa di cron senza andare in overflow.
+
+    # cron - regular background program processing daemon
+    #
+    # cron is a standard UNIX program that runs user-specified programs at
+    # periodic scheduled times
+
+    description     "regular background program processing daemon"
+
+    start on runlevel [2345]
+    stop on runlevel [!2345]
+
+    expect fork
+    respawn
+
+    exec cron
+
+## Cron 4 SysV
+
+![cron](sysv-cron.png)
