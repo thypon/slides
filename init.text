@@ -5,16 +5,17 @@ author: Andrea Brancaleoni
 
 Il compito di avviare e riavviare il computer è svolto da uno speciale componente chiamato *init*. *Init* è responsabile di terminare l'avvio dopo che il kernel è stato caricato.
 
-*Init* Avvia altri programmi detti Demoni. Ad esempio avviano il server grafico in un sistema Desktop o un server SQL o HTTP in sistemi Server.
+*Init* Avvia altri programmi detti Demoni. Ad esempio avvia il server grafico in un sistema Desktop o un server SQL o HTTP in sistemi Server.
 
-## Reliability
+## Affidabilità
 
-Reliability and safety is critically important for an init daemon since:
-- it runs as the super-user.
-- it is responsible for managing critical system services.
-- if init exits for any reason, the kernel panics.
+L'affidabilità e la sicurezza è molto importante per un demone di init dato che:
 
-the init system itself must not be compromised since if it fails, the kernel panics. Therefore, any functionality which is not considered "core" functionality is farmed out to other daemons.
+- Gira in modalità super utente.
+- É responsabile di controllare servizi di sistema critici.
+- Se init muore per qualsiasi ragione, il kernel va in panic.
+
+Il sistema di init non deve essere compromesso, dato che se fallisce, il kernel va in panic. Dunque, tutte le funzionalità che non sono considerate "core" devono essere tolte e messe negli altri demoni.
 
 ## Recall: Demone
 
@@ -24,16 +25,12 @@ the init system itself must not be compromised since if it fails, the kernel pan
 
 - Sistemi di avvio sequenziali: sistemi di avvio in cui ogni demone è avviato in sequenza.
 appartengono a questa famiglia tutti i primi sistemi di avvio dove o non si era in possesso di architetture multicore/manycore o non era necessario accendere/spegnere la macchina in continuazione ma era più importante l'uptime. (EG. System-V init, BSD-Style init)
-- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi tra loro indipendenti. (EG: OpenRC, INITNG)
+- Sistemi di avvio gerarchici: evoluzione dei sistemi di avvio sequenziali forniscono parallelismo all'avvio inizializzando contemporaneamente servizi tra loro indipendenti. (EG: OpenRC, InitNG)
 - Sistemi di avvio Startless/Event Based: spesso forniscono funzionalità simili ai sistemi di avvio gerarchico, tuttavia il loro funzionamento interno è diverso. (EG: LaunchD, Upstart, SystemD)
 
 ## Linea Evolutive
 
-@grafico temporale dei maggiori sistemi d'avvio
-
-## Caratteristiche sistemi di avvio
-
-@tabella incrociata feature diversi sistemi d'avvio
+![Linee Evolutive](timeline.png)
 
 ## System-V init
 
@@ -69,16 +66,43 @@ LaunchD è essenzialmente un sostituto per:
 
 ## Upstart
 
-Upstart is an *event-based* replacement for the /sbin/init daemon which handles starting of tasks and services during boot, 
-stopping them during shutdown and supervising them while the system is running.
+Upstart è un sostituto *event-based* del demone di init. Fu originariamente sviluppato per Ubuntu, ma col tempo è stato adottato
+da tutte le principali distribuzioni Desktop.
 
-It was originally developed for the Ubuntu distribution, but is intended to be suitable for deployment in all Linux 
-distributions as a replacement for the venerable System-V init.
+## Caratteristiche di Upstart
+
+- I Task e i Servizi sono avviati e fermati tramite eventi
+- Gli eventi vengono generati mentre i servizi vengono avviati e fermati
+- Gli eventi possono essere ascoltati da qualsiasi altro processo nel sistema
+- I servizi possono essere riavviati se muoiono inaspettatamente
+- La comunicazione con il demone di init avviene attraverso D-BUS
+- Servizi Utente, che gli utenti stessi possono avviare e stoppare
 
 ## SystemD
 
-systemd is a system and service manager for Linux, compatible with SysV and LSB init scripts. 
-systemd provides aggressive parallelization capabilities, uses socket and D-Bus activation for starting services, 
-offers on-demand starting of daemons, keeps track of processes using Linux control groups, supports snapshotting and 
-restoring of the system state, maintains mount and automount points and implements an elaborate transactional 
-dependency-based service control logic. It can work as a drop-in replacement for sysvinit.
+SystemD è un service manager per Linux, compatibile con SysV e gli init scripts LSB. SystemD fornisce parallelizzazione aggressiva, usa Socket
+e D-Bus per avviare i servizi, offre avvio on-demand, tiene traccia dei processi attivi con i control groups (CGROUP), mantiene i punti di mount e
+automount e e implementa un elaborata logica transazionale dependency based.
+
+## Recall: The Commandment
+
+Non avrai altro Dio al di fuori di me
+
+## Caratteristiche di SystemD
+
+- Parallelizzazione estrema
+- Attivazione Socket Based (inetd)
+- Bus Based Activation tramite D-BUS
+- Caricamento On-Demand, anche di File-System (autofs)
+- No Shell Scripts
+- Monitoraggio attraverso Control Groups
+
+
+## Parallelizzazione
+
+![Parallelization](parallelization.png)
+
+## Crash Course: SystemVinit
+
+
+
